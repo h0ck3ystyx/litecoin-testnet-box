@@ -1,30 +1,46 @@
 LITECOIND=litecoind
-S1_FLAGS=
-S2_FLAGS=
-S1=$(LITECOIND) -datadir=1 $(S1_FLAGS)
-S2=$(LITECOIND) -datadir=2 $(S2_FLAGS)
+LITECOINGUI=litecoin-qt
+LITECOINCLI=litecoin-cli
+B1_FLAGS=
+B2_FLAGS=
+B1=-datadir=1 $(B1_FLAGS)
+B2=-datadir=2 $(B2_FLAGS)
+BLOCKS=1
+ADDRESS=
+AMOUNT=
+ACCOUNT=
 
 start:
-	$(S1) -daemon
-	$(S2) -daemon
-	
-generate-true:
-	$(S1) setgenerate true
-	
-generate-false:
-	$(S1) setgenerate false
-	
+	$(LITECOIND) $(B1) -daemon
+	$(LITECOIND) $(B2) -daemon
+
+start-gui:
+	$(LITECOINGUI) $(B1) &
+	$(LITECOINGUI) $(B2) &
+
+generate:
+	$(LITECOINCLI) $(B1) generate $(BLOCKS)
+
 getinfo:
-	$(S1) getinfo
-	$(S2) getinfo
-	
-getaccountaddress:
-	$(S1) getaccountaddress ""
+	$(LITECOINCLI) $(B1) getinfo
+	$(LITECOINCLI) $(B2) getinfo
+
+sendfrom1:
+	$(LITECOINCLI) $(B1) sendtoaddress $(ADDRESS) $(AMOUNT)
+
+sendfrom2:
+	$(LITECOINCLI) $(B2) sendtoaddress $(ADDRESS) $(AMOUNT)
+
+address1:
+	$(LITECOINCLI) $(B1) getnewaddress $(ACCOUNT)
+
+address2:
+	$(LITECOINCLI) $(B2) getnewaddress $(ACCOUNT)
 
 stop:
-	$(S1) stop
-	$(S2) stop
+	$(LITECOINCLI) $(B1) stop
+	$(LITECOINCLI) $(B2) stop
 
 clean:
-	rm -rf 1/testnet*
-	rm -rf 2/testnet*
+	find 1/regtest/* -not -name 'server.*' -delete
+	find 2/regtest/* -not -name 'server.*' -delete
